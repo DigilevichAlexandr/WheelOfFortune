@@ -7,6 +7,7 @@ const state = {
 };
 
 const colors = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899"];
+
 const participantForm = document.getElementById("participantForm");
 const redeemForm = document.getElementById("redeemForm");
 const spinBtn = document.getElementById("spinBtn");
@@ -33,6 +34,7 @@ participantForm.addEventListener("submit", async (event) => {
 });
 
 spinBtn.addEventListener("click", async () => {
+<<<<<<< codex/create-prize-wheel-application-in-.net-s2kksc
   if (state.isSpinning) {
     return;
   }
@@ -44,6 +46,8 @@ spinBtn.addEventListener("click", async () => {
     return;
   }
 
+=======
+>>>>>>> main
   const response = await fetch("/api/spin", { method: "POST" });
   const data = await response.json();
 
@@ -52,6 +56,7 @@ spinBtn.addEventListener("click", async () => {
     return;
   }
 
+<<<<<<< codex/create-prize-wheel-application-in-.net-s2kksc
   spinResult.textContent = "Колесо крутится...";
   state.isSpinning = true;
   spinBtn.disabled = true;
@@ -63,6 +68,9 @@ spinBtn.addEventListener("click", async () => {
 
   state.isSpinning = false;
   spinBtn.disabled = false;
+=======
+  spinResult.textContent = `Победитель: ${data.name}, выигрыш: ${data.wonPoints} очков`;
+>>>>>>> main
   await refreshState();
 });
 
@@ -165,6 +173,7 @@ function drawWheel() {
   });
 }
 
+<<<<<<< codex/create-prize-wheel-application-in-.net-s2kksc
 function calculateTargetRotation(participants, totalPoints, winnerId) {
   let startAngle = -Math.PI / 2;
 
@@ -205,4 +214,6 @@ function animateSpin(targetRotation) {
   });
 }
 
+=======
+>>>>>>> main
 refreshState();
