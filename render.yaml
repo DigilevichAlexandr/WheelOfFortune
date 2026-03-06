@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: wheel-of-fortune
+    runtime: docker
+    plan: free
+    autoDeploy: true
