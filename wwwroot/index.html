@@ -23,7 +23,14 @@
     <section class="layout">
       <article class="panel">
         <h2>Колесо</h2>
+
+        <div class="wheel-wrap">
+          <div class="wheel-pointer" aria-hidden="true"></div>
+          <canvas id="wheel" width="420" height="420"></canvas>
+        </div>
+
         <canvas id="wheel" width="420" height="420"></canvas>
+
         <button id="spinBtn">Крутить колесо</button>
         <p id="spinResult">—</p>
       </article>

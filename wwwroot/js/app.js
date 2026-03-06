@@ -2,7 +2,8 @@ const state = {
   participants: [],
   totalPoints: 0,
   winnerBalance: null,
-  rotation: 0
+  rotation: 0,
+  isSpinning: false
 };
 
 const colors = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899"];
@@ -33,6 +34,20 @@ participantForm.addEventListener("submit", async (event) => {
 });
 
 spinBtn.addEventListener("click", async () => {
+<<<<<<< codex/create-prize-wheel-application-in-.net-s2kksc
+  if (state.isSpinning) {
+    return;
+  }
+
+  const snapshotParticipants = [...state.participants];
+  const snapshotTotalPoints = state.totalPoints;
+  if (snapshotParticipants.length === 0 || snapshotTotalPoints === 0) {
+    spinResult.textContent = "Добавьте хотя бы одного участника, чтобы крутить колесо.";
+    return;
+  }
+
+=======
+>>>>>>> main
   const response = await fetch("/api/spin", { method: "POST" });
   const data = await response.json();
 
@@ -41,7 +56,21 @@ spinBtn.addEventListener("click", async () => {
     return;
   }
 
+<<<<<<< codex/create-prize-wheel-application-in-.net-s2kksc
+  spinResult.textContent = "Колесо крутится...";
+  state.isSpinning = true;
+  spinBtn.disabled = true;
+
+  const targetRotation = calculateTargetRotation(snapshotParticipants, snapshotTotalPoints, data.participantId);
+  await animateSpin(targetRotation);
+
   spinResult.textContent = `Победитель: ${data.name}, выигрыш: ${data.wonPoints} очков`;
+
+  state.isSpinning = false;
+  spinBtn.disabled = false;
+=======
+  spinResult.textContent = `Победитель: ${data.name}, выигрыш: ${data.wonPoints} очков`;
+>>>>>>> main
   await refreshState();
 });
 
@@ -144,4 +173,47 @@ function drawWheel() {
   });
 }
 
+<<<<<<< codex/create-prize-wheel-application-in-.net-s2kksc
+function calculateTargetRotation(participants, totalPoints, winnerId) {
+  let startAngle = -Math.PI / 2;
+
+  for (const participant of participants) {
+    const slice = (participant.points / totalPoints) * Math.PI * 2;
+    const endAngle = startAngle + slice;
+
+    if (participant.id === winnerId) {
+      const winnerCenter = startAngle + slice / 2;
+      const normalize = (angle) => ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      const currentNormalized = normalize(state.rotation);
+      const desiredNormalized = normalize(-Math.PI / 2 - winnerCenter);
+      const delta = normalize(desiredNormalized - currentNormalized);
+      const extraSpins = 6 + Math.floor(Math.random() * 3);
+      return state.rotation + extraSpins * Math.PI * 2 + delta;
+    }
+
+    startAngle = endAngle;
+  }
+
+  return state.rotation + 6 * Math.PI * 2;
+}
+
+function animateSpin(targetRotation) {
+  return new Promise((resolve) => {
+    canvas.style.transition = "transform 4.5s cubic-bezier(0.12, 0.8, 0.2, 1)";
+    canvas.style.transform = `rotate(${(targetRotation * 180) / Math.PI}deg)`;
+
+    const finish = () => {
+      canvas.removeEventListener("transitionend", finish);
+      canvas.style.transition = "none";
+      state.rotation = targetRotation;
+      resolve();
+    };
+
+    canvas.addEventListener("transitionend", finish, { once: true });
+    setTimeout(finish, 4700);
+  });
+}
+
+=======
+>>>>>>> main
 refreshState();
