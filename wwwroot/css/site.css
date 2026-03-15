@@ -62,51 +62,110 @@ button:hover {
   background: #1d4ed8;
 }
 
-<<<<<<< codex/create-prize-wheel-application-in-.net-s2kksc
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.wheel-wrap {
+.wheel-container {
   position: relative;
-  width: min(100%, 420px);
+  display: inline-block;
   margin: 0 auto 12px;
+}
+
+.wheel-wrapper {
+  display: flex;
+  justify-content: center;
 }
 
 #wheel {
   display: block;
-  width: 100%;
+  width: min(100%, 420px);
   aspect-ratio: 1;
   background: #fff;
   border-radius: 50%;
-  transform: rotate(0deg);
-  box-shadow: 0 8px 28px rgba(2, 6, 23, 0.45);
 }
 
 .wheel-pointer {
   position: absolute;
-  top: -2px;
+  top: -4px;
   left: 50%;
   transform: translateX(-50%);
   width: 0;
   height: 0;
   border-left: 14px solid transparent;
   border-right: 14px solid transparent;
-  border-top: 24px solid #f8fafc;
-  z-index: 2;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.4));
-=======
-#wheel {
-  display: block;
-  margin: 0 auto 12px;
-  width: min(100%, 420px);
-  aspect-ratio: 1;
-  background: #fff;
-  border-radius: 50%;
->>>>>>> main
+  border-top: 24px solid #fbbf24;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  z-index: 1;
+  pointer-events: none;
 }
 
 ul {
   padding-left: 20px;
+}
+
+.muted {
+  color: #64748b;
+}
+
+h3 {
+  font-size: 1rem;
+  margin: 12px 0 8px;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.auth-tab {
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid #475569;
+  color: #94a3b8;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.auth-tab.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 280px;
+}
+
+.auth-form input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.auth-error {
+  color: #ef4444;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.user-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  color: #94a3b8;
+}
+
+.user-bar button {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.wheel-article {
+  overflow: visible;
 }

@@ -4,10 +4,7 @@ services:
     runtime: docker
     plan: free
     autoDeploy: true
-<<<<<<< codex/create-prize-wheel-application-in-.net-s2kksc
-    healthCheckPath: /api/state
+    healthCheckPath: /
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
-=======
->>>>>>> main

@@ -3,7 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Колесо" />
   <title>Колесо фортуны</title>
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/icons/icon.svg" />
+  <link rel="manifest" href="/manifest.json" />
   <link rel="stylesheet" href="/css/site.css" />
 </head>
 <body>
@@ -11,26 +18,45 @@
     <h1>Колесо фортуны</h1>
     <p class="subtitle">Участники добавляют очки, получают долю колеса, а победитель забирает банк.</p>
 
-    <section class="panel">
-      <h2>Добавить участника</h2>
-      <form id="participantForm" class="row">
-        <input id="name" type="text" placeholder="Имя" required />
-        <input id="points" type="number" min="1" placeholder="Очки" required />
-        <button type="submit">Добавить</button>
+    <section id="authSection" class="panel" hidden>
+      <h2>Вход</h2>
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" data-tab="login">Вход</button>
+        <button type="button" class="auth-tab" data-tab="register">Регистрация</button>
+      </div>
+      <form id="loginForm" class="auth-form">
+        <input name="username" type="text" placeholder="Логин" required />
+        <input name="password" type="password" placeholder="Пароль" required />
+        <button type="submit">Войти</button>
       </form>
+      <form id="registerForm" class="auth-form" hidden>
+        <input name="username" type="text" placeholder="Логин (от 3 символов)" required minlength="3" />
+        <input name="password" type="password" placeholder="Пароль (от 4 символов)" required minlength="4" />
+        <button type="submit">Зарегистрироваться</button>
+      </form>
+      <p id="authError" class="auth-error"></p>
     </section>
 
+    <section id="gameSection" hidden>
+      <p class="user-bar">Вы вошли как <strong id="username"></strong> <button type="button" id="logoutBtn">Выйти</button></p>
+      <div class="panel">
+        <h2>Добавить участника</h2>
+        <form id="participantForm" class="row">
+          <input id="name" type="text" placeholder="Имя" required />
+          <input id="points" type="number" min="1" placeholder="Очки" required />
+          <button type="submit">Добавить</button>
+        </form>
+      </div>
+
     <section class="layout">
-      <article class="panel">
+      <article class="panel wheel-article">
         <h2>Колесо</h2>
-
-        <div class="wheel-wrap">
-          <div class="wheel-pointer" aria-hidden="true"></div>
-          <canvas id="wheel" width="420" height="420"></canvas>
+        <div class="wheel-wrapper">
+          <div class="wheel-container">
+            <canvas id="wheel" width="420" height="420"></canvas>
+            <div class="wheel-pointer"></div>
+          </div>
         </div>
-
-        <canvas id="wheel" width="420" height="420"></canvas>
-
         <button id="spinBtn">Крутить колесо</button>
         <p id="spinResult">—</p>
       </article>
@@ -39,6 +65,8 @@
         <h2>Участники и банк</h2>
         <p>Общий банк: <strong id="totalPoints">0</strong> очков</p>
         <ul id="participants"></ul>
+        <h3>Балансы</h3>
+        <ul id="balances"></ul>
       </article>
     </section>
 
@@ -49,6 +77,8 @@
         <input id="prizeCost" type="number" min="1" placeholder="Стоимость приза" required />
         <button type="submit">Списать очки за приз</button>
       </form>
+    </section>
+    </section>
     </section>
   </main>
 

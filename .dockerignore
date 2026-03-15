@@ -1,0 +1,8 @@
+bin/
+obj/
+.git/
+.vs/
+*.user
+*.db
+.gitignore
+README.md

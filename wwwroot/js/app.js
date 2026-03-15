@@ -3,15 +3,99 @@ const state = {
   totalPoints: 0,
   winnerBalance: null,
   rotation: 0,
-  isSpinning: false
+  spinning: false,
+  displayParticipants: [],
+  displayTotalPoints: 0
 };
 
 const colors = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899"];
+
+async function api(url, opts = {}) {
+  const res = await fetch(url, { ...opts, credentials: "include" });
+  if (res.status === 401) {
+    showAuth();
+    throw new Error("Unauthorized");
+  }
+  return res;
+}
+
+const authSection = document.getElementById("authSection");
+const gameSection = document.getElementById("gameSection");
+const usernameEl = document.getElementById("username");
+const logoutBtn = document.getElementById("logoutBtn");
+const loginForm = document.getElementById("loginForm");
+const registerForm = document.getElementById("registerForm");
+const authError = document.getElementById("authError");
+
+function showAuth() {
+  authSection.hidden = false;
+  gameSection.hidden = true;
+}
+
+function showGame(user) {
+  authSection.hidden = true;
+  gameSection.hidden = false;
+  usernameEl.textContent = user.username;
+  authError.textContent = "";
+}
+
+document.querySelectorAll(".auth-tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".auth-tab").forEach((t) => t.classList.remove("active"));
+    tab.classList.add("active");
+    const isLogin = tab.dataset.tab === "login";
+    loginForm.hidden = !isLogin;
+    registerForm.hidden = isLogin;
+    authError.textContent = "";
+  });
+});
+
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  authError.textContent = "";
+  const fd = new FormData(loginForm);
+  const res = await fetch("/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ username: fd.get("username"), password: fd.get("password") })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    authError.textContent = data.message || "Ошибка входа";
+    return;
+  }
+  showGame(data);
+  await refreshState();
+});
+
+registerForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  authError.textContent = "";
+  const fd = new FormData(registerForm);
+  const res = await fetch("/api/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: fd.get("username"), password: fd.get("password") })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    authError.textContent = data.message || "Ошибка регистрации";
+    return;
+  }
+  authError.textContent = data.message || "Зарегистрированы. Войдите.";
+});
+
+logoutBtn.addEventListener("click", async () => {
+  await fetch("/api/logout", { method: "POST", credentials: "include" });
+  showAuth();
+});
 
 const participantForm = document.getElementById("participantForm");
 const redeemForm = document.getElementById("redeemForm");
 const spinBtn = document.getElementById("spinBtn");
 const participantsList = document.getElementById("participants");
+const balancesList = document.getElementById("balances");
 const totalPointsNode = document.getElementById("totalPoints");
 const spinResult = document.getElementById("spinResult");
 const winnerText = document.getElementById("winner");
@@ -23,7 +107,7 @@ participantForm.addEventListener("submit", async (event) => {
   const name = document.getElementById("name").value;
   const points = Number(document.getElementById("points").value);
 
-  await fetch("/api/participants", {
+  await api("/api/participants", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, points })
@@ -34,44 +118,31 @@ participantForm.addEventListener("submit", async (event) => {
 });
 
 spinBtn.addEventListener("click", async () => {
-<<<<<<< codex/create-prize-wheel-application-in-.net-s2kksc
-  if (state.isSpinning) {
-    return;
-  }
+  if (state.spinning || state.participants.length === 0) return;
 
-  const snapshotParticipants = [...state.participants];
-  const snapshotTotalPoints = state.totalPoints;
-  if (snapshotParticipants.length === 0 || snapshotTotalPoints === 0) {
-    spinResult.textContent = "Добавьте хотя бы одного участника, чтобы крутить колесо.";
-    return;
-  }
+  spinBtn.disabled = true;
+  state.spinning = true;
+  state.displayParticipants = [...state.participants];
+  state.displayTotalPoints = state.totalPoints;
 
-=======
->>>>>>> main
-  const response = await fetch("/api/spin", { method: "POST" });
+  const response = await api("/api/spin", { method: "POST" });
   const data = await response.json();
 
   if (!response.ok) {
     spinResult.textContent = data.message;
+    state.spinning = false;
+    spinBtn.disabled = false;
     return;
   }
 
-<<<<<<< codex/create-prize-wheel-application-in-.net-s2kksc
-  spinResult.textContent = "Колесо крутится...";
-  state.isSpinning = true;
-  spinBtn.disabled = true;
-
-  const targetRotation = calculateTargetRotation(snapshotParticipants, snapshotTotalPoints, data.participantId);
-  await animateSpin(targetRotation);
-
+  spinResult.textContent = "Крутится...";
+  const targetRotation = Math.PI * 2 * 6 - (data.pointer / state.displayTotalPoints) * Math.PI * 2;
+  await animateWheel(targetRotation);
   spinResult.textContent = `Победитель: ${data.name}, выигрыш: ${data.wonPoints} очков`;
 
-  state.isSpinning = false;
-  spinBtn.disabled = false;
-=======
-  spinResult.textContent = `Победитель: ${data.name}, выигрыш: ${data.wonPoints} очков`;
->>>>>>> main
   await refreshState();
+  state.spinning = false;
+  spinBtn.disabled = false;
 });
 
 redeemForm.addEventListener("submit", async (event) => {
@@ -83,7 +154,7 @@ redeemForm.addEventListener("submit", async (event) => {
   }
 
   const prizeCost = Number(document.getElementById("prizeCost").value);
-  const response = await fetch("/api/redeem", {
+  const response = await api("/api/redeem", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ winnerId: state.winnerBalance.participantId, prizeCost })
@@ -100,7 +171,7 @@ redeemForm.addEventListener("submit", async (event) => {
 });
 
 async function refreshState() {
-  const response = await fetch("/api/state");
+  const response = await api("/api/state");
   const data = await response.json();
 
   state.participants = data.participants;
@@ -116,10 +187,22 @@ function render() {
     .map((p) => `<li>${p.name}: ${p.points} очков</li>`)
     .join("");
 
+  const balanceItems = state.participants.map((p) => `${p.name}: ${p.points} очков`);
+  if (state.winnerBalance) {
+    balanceItems.push(`${state.winnerBalance.name}: ${state.winnerBalance.balance} очков (победитель)`);
+  }
+  balancesList.innerHTML = balanceItems.length
+    ? balanceItems.map((b) => `<li>${b}</li>`).join("")
+    : "<li class=\"muted\">Пока нет</li>";
+
   winnerText.textContent = state.winnerBalance
     ? `Победитель: ${state.winnerBalance.name}, баланс: ${state.winnerBalance.balance} очков`
     : "Победитель пока не определён.";
 
+  if (!state.spinning) {
+    state.displayParticipants = [...state.participants];
+    state.displayTotalPoints = state.totalPoints;
+  }
   drawWheel();
 }
 
@@ -130,7 +213,10 @@ function drawWheel() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  if (state.participants.length === 0 || state.totalPoints === 0) {
+  const participants = state.displayParticipants;
+  const totalPoints = state.displayTotalPoints;
+
+  if (participants.length === 0 || totalPoints === 0) {
     ctx.fillStyle = "#cbd5e1";
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
@@ -143,10 +229,15 @@ function drawWheel() {
     return;
   }
 
+  ctx.save();
+  ctx.translate(centerX, centerY);
+  ctx.rotate(state.rotation);
+  ctx.translate(-centerX, -centerY);
+
   let startAngle = -Math.PI / 2;
 
-  state.participants.forEach((participant, index) => {
-    const slice = (participant.points / state.totalPoints) * Math.PI * 2;
+  participants.forEach((participant, index) => {
+    const slice = (participant.points / totalPoints) * Math.PI * 2;
     const endAngle = startAngle + slice;
 
     ctx.beginPath();
@@ -171,49 +262,46 @@ function drawWheel() {
 
     startAngle = endAngle;
   });
+
+  ctx.restore();
 }
 
-<<<<<<< codex/create-prize-wheel-application-in-.net-s2kksc
-function calculateTargetRotation(participants, totalPoints, winnerId) {
-  let startAngle = -Math.PI / 2;
+function animateWheel(targetRotation) {
+  const duration = 4000;
+  const startRotation = state.rotation;
+  const startTime = performance.now();
 
-  for (const participant of participants) {
-    const slice = (participant.points / totalPoints) * Math.PI * 2;
-    const endAngle = startAngle + slice;
-
-    if (participant.id === winnerId) {
-      const winnerCenter = startAngle + slice / 2;
-      const normalize = (angle) => ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-      const currentNormalized = normalize(state.rotation);
-      const desiredNormalized = normalize(-Math.PI / 2 - winnerCenter);
-      const delta = normalize(desiredNormalized - currentNormalized);
-      const extraSpins = 6 + Math.floor(Math.random() * 3);
-      return state.rotation + extraSpins * Math.PI * 2 + delta;
-    }
-
-    startAngle = endAngle;
-  }
-
-  return state.rotation + 6 * Math.PI * 2;
-}
-
-function animateSpin(targetRotation) {
   return new Promise((resolve) => {
-    canvas.style.transition = "transform 4.5s cubic-bezier(0.12, 0.8, 0.2, 1)";
-    canvas.style.transform = `rotate(${(targetRotation * 180) / Math.PI}deg)`;
+    function tick(now) {
+      const elapsed = now - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 3);
+      state.rotation = startRotation + (targetRotation - startRotation) * ease;
+      drawWheel();
 
-    const finish = () => {
-      canvas.removeEventListener("transitionend", finish);
-      canvas.style.transition = "none";
-      state.rotation = targetRotation;
-      resolve();
-    };
-
-    canvas.addEventListener("transitionend", finish, { once: true });
-    setTimeout(finish, 4700);
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        state.rotation = startRotation + targetRotation;
+        state.rotation = state.rotation % (Math.PI * 2);
+        resolve();
+      }
+    }
+    requestAnimationFrame(tick);
   });
 }
 
-=======
->>>>>>> main
-refreshState();
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/service-worker.js");
+}
+
+(async () => {
+  const res = await fetch("/api/me", { credentials: "include" });
+  const user = await res.json().catch(() => null);
+  if (user?.username) {
+    showGame(user);
+    await refreshState();
+  } else {
+    showAuth();
+  }
+})();
